@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta charset = "UTF-8">
+      <title>News Alerts</title>
+      <!-- Latest compiled and minified CSS -->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+      <link rel="stylesheet" href="/index.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+   </head>
+   
+   <body>
+    <div id="mainDiv">
+        <h1 id="username">Welcome {{username}} </h1>
+
+        <h1 id="heading">SEARCH FOR A QUERY</h1>
+        <form class="submitQuery" id="submitQuery" method="POST" action="/query">
+            <div class="form-group">
+                <input type="text" class="form-control" name="query" id="query" placeholder="Enter query">
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="1-day" name="maxTime" value="24" checked>
+                <label for="1-day">Daily</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="1-week" name="maxTime" value="168">
+                <label for="1-week">Weekly</label><br>
+            </div class="form-check-inline">    
+            
+            <br><br>
+            <button class="btn btn-primary" type="submit" id="submit" name="indexSubmit" value="search"> Search </button> 
+            <button class="btn btn-primary" type="submit" id="saveQuery" name="indexSubmit" value="saveQuery"> Save Query </button>         
+        </form>
+        <br>
+        <form action="/logout" method="POST">
+            <button id="logout" class="btn btn-primary">Logout</button>
+        </form>
+    </div>
+    <h1 id="queryHead">Saved Queries</h1>
+    <div id="displayQueries">
+        {{#if rows}}
+            {{#each queries}}
+                {{#ifEquals time "24"}}
+                    <li class='cancel'><button class='cross'>X </button><span class='queryData'>{{query}}</span><span class='timeData' value='times'>Daily</span></li><br>    
+                {{/ifEquals}}
+                {{#ifEquals time "168"}}
+                    <li class='cancel'><button class='cross'>X </button><span class='queryData'>{{query}}</span><span class='timeData' value='times'>Weekly</span></li><br>    
+                {{/ifEquals}}
+            {{/each}}
+        {{else}}
+            <p>No saved queries!</p>
+        {{/if}}
+    </div>
+
+    <script>
+        
+        $('#displayQueries').on("click", ".cross", function() {
+            var delQuery=($(this).next('.queryData').text());
+            var delTime=($(this).nextAll('.timeData').text());
+            if (delTime=="Daily") {
+                delTime=24
+            }
+            else if (delTime=="Weekly") {
+                delTime=168
+            }
+           
+            console.log(delQuery, delTime)
+            
+            var xhr = new XMLHttpRequest();
+            
+            var data = {
+                delQuery: delQuery,
+                delTime: delTime
+            };
+            xhr.open('POST', '/delete-query');
+            xhr.onload = function(data) {
+                console.log('loaded', this.responseText);
+            };
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify(data));
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                  var response = xhr.responseText;
+                    if (xhr.status === 200) {
+                       window.location.href="/query"
+                    } else {
+                       console.log('failed');
+                    }
+                }
+              }
+        });
+    </script>
+   </body>
+</html>
